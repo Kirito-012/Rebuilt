@@ -4,6 +4,7 @@ import TrendingStories from '../components/TrendingStories'
 import CategorySections from '../components/CategorySections'
 import LatestBlogs from '../components/LatestBlogs'
 import YouMissed from '../components/YouMissed'
+import Footer from '../components/Footer'
 
 const Home = () => {
 	return (
@@ -24,6 +25,7 @@ const Home = () => {
 				</div>
 			</section>
 			<YouMissed />
+			<Footer />
 		</div>
 	)
 }

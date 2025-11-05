@@ -1,9 +1,10 @@
 import {useState, useEffect} from 'react'
-import {Search, Linkedin as LinkedinIcon} from 'lucide-react'
+import {Search, Linkedin as LinkedinIcon, Menu, X} from 'lucide-react'
 import {getCategories} from '../services/api'
 
 const Navbar = () => {
 	const [categories, setCategories] = useState([])
+	const [menuOpen, setMenuOpen] = useState(false)
 
 	const currentDate = new Date().toLocaleDateString('en-US', {
 		weekday: 'long',
@@ -39,7 +40,14 @@ const Navbar = () => {
 			<div className='bg-[#1a1a1a] text-white text-sm'>
 				<div className='container mx-auto px-4 py-2 flex justify-between items-center'>
 					<div className='text-gray-300'>{currentDate}</div>
-					<div className='flex items-center gap-6'>
+					<button
+						className='p-2 sm:hidden rounded-sm focus:outline-none focus:ring-2 focus:ring-white/40'
+						aria-label='Open menu'
+						onClick={() => setMenuOpen(true)}
+					>
+						<Menu size={22} />
+					</button>
+					<div className='hidden sm:flex items-center gap-6'>
 						<a
 							href='#'
 							className='text-gray-300 hover:text-red-400 transition-colors'>
@@ -87,7 +95,8 @@ const Navbar = () => {
 			</div>
 
 			{/* Logo and Advertisement Section */}
-			<div className='bg-black text-white py-6'>
+			{/* Desktop (unchanged) */}
+			<div className='bg-black text-white py-6 hidden lg:block'>
 				<div className='container mx-auto px-4 flex justify-between items-center'>
 					{/* Logo */}
 					<a
@@ -127,8 +136,42 @@ const Navbar = () => {
 				</div>
 			</div>
 
+			{/* Mobile/Tablet hero center section */}
+			<div className='lg:hidden bg-black text-white'>
+				{/* Row with logo and text */}
+				<div className='container mx-auto px-4 py-3'>
+					<div className='flex items-center gap-3'>
+						<img
+							src='/Logo/Logo.jpeg'
+							alt='Site logo'
+							className='h-10 w-10 sm:h-12 sm:w-12 object-cover rounded'
+							loading='eager'
+							decoding='async'
+						/>
+						<div className='leading-tight'>
+							<h1 className='text-2xl sm:text-3xl font-bold tracking-tight'>Rebuilt India</h1>
+							<p className='text-gray-300 text-xs sm:text-sm mt-0.5'>News, Tech, Travel and more</p>
+						</div>
+					</div>
+				</div>
+				{/* Ad banner below title */}
+				<div className='container mx-auto px-4 py-3'>
+					<div className='bg-linear-to-r from-red-600 to-red-700 px-4 sm:px-6 py-3 sm:py-4 rounded-lg flex items-center gap-4'>
+						<div className='min-w-0'>
+							<div className='text-lg sm:text-xl font-bold leading-tight'>ADVERTISEMENT SECTION</div>
+							<div className='text-xs sm:text-sm text-red-200 truncate'>EASILY ADD BANNER ADVERTISEMENT HERE</div>
+						</div>
+						<div className='hidden sm:block bg-white text-black px-3 py-2 rounded font-bold text-xs sm:text-sm'>
+							ADVERTISEMENT
+							<br className='hidden sm:block' />
+							SECTION
+						</div>
+					</div>
+				</div>
+			</div>
+
 			{/* Navigation Menu */}
-			<div className='bg-[#b91c1c] text-white'>
+			<div className='bg-[#b91c1c] text-white hidden lg:block'>
 				<div className='container mx-auto px-4'>
 					<div className='flex items-center justify-between'>
 						<ul className='flex items-center'>
@@ -160,6 +203,65 @@ const Navbar = () => {
 					</div>
 				</div>
 			</div>
+
+			{/* Mobile/Tablet Nav Bar (red) */}
+			<div className='lg:hidden bg-[#b91c1c] text-white'>
+				<div className='container mx-auto px-4'>
+					<div className='flex items-center justify-between py-3'>
+						<button
+							className='p-2 rounded-sm focus:outline-none focus:ring-2 focus:ring-white/50'
+							aria-label='Open menu'
+							onClick={() => setMenuOpen(true)}
+						>
+							<Menu size={24} />
+						</button>
+						<button
+							className='p-2 rounded-sm focus:outline-none focus:ring-2 focus:ring-white/50'
+							aria-label='Search'
+						>
+							<Search size={22} />
+						</button>
+					</div>
+				</div>
+			</div>
+
+			{/* Off-canvas drawer */}
+			{menuOpen && (
+				<div className='lg:hidden fixed inset-0 z-50'>
+					<div
+						className='absolute inset-0 bg-black/50'
+						role='button'
+						aria-label='Close menu overlay'
+						onClick={() => setMenuOpen(false)}
+					/>
+					<div className='absolute left-0 top-0 h-full w-72 max-w-[85%] bg-white shadow-xl flex flex-col'>
+						<div className='flex items-center justify-between p-4 border-b bg-[#b91c1c] text-white'>
+							<span className='font-semibold'>Menu</span>
+							<button
+								className='p-2 rounded-sm hover:bg-white/10'
+								aria-label='Close menu'
+								onClick={() => setMenuOpen(false)}
+							>
+								<X size={20} />
+							</button>
+						</div>
+						<nav className='p-2 overflow-y-auto'>
+							<ul className='space-y-1'>
+								<li>
+									<a href='/' className='block px-3 py-2 rounded hover:bg-gray-100'>HOME</a>
+								</li>
+								{categories.map((category) => (
+									<li key={category._id}>
+										<a href={`/category/${category.slug}`} className='block px-3 py-2 rounded hover:bg-gray-100'>
+											{category.name}
+										</a>
+									</li>
+								))}
+							</ul>
+						</nav>
+					</div>
+				</div>
+			)}
 		</nav>
 	)
 }

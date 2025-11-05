@@ -11,9 +11,28 @@
   .container {
     margin-left: auto;
     margin-right: auto;
-    padding-left: 0;
-    padding-right: 0;
+    padding-left: 1.25rem; /* mobile */
+    padding-right: 1.25rem; /* mobile */
     max-width: var(--site-max-w);
+  }
+
+  @media (min-width: 640px) {
+    .container {
+      padding-left: 1.5rem; /* tablet small */
+      padding-right: 1.5rem;
+    }
+  }
+  @media (min-width: 768px) {
+    .container {
+      padding-left: 2rem; /* tablet */
+      padding-right: 2rem;
+    }
+  }
+  @media (min-width: 1024px) {
+    .container {
+      padding-left: 2rem; /* desktop unchanged */
+      padding-right: 2rem;
+    }
   }
 
   /* News ticker style marquee (continuous left scroll) */
