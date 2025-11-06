@@ -1,4 +1,5 @@
 import Navbar from '../components/navbar'
+import TopStoriesCarousel from '../components/TopStoriesCarousel'
 import MainStories from '../components/MainStories'
 import TrendingStories from '../components/TrendingStories'
 import CategorySections from '../components/CategorySections'
@@ -9,6 +10,7 @@ const Home = () => {
 	return (
 		<div>
 			<Navbar />
+			<TopStoriesCarousel />
 			<MainStories />
 			<TrendingStories />
 			<section className='bg-gray-50'>

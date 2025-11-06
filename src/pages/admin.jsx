@@ -4,7 +4,8 @@ import {
   getCategories, createCategory, deleteCategory, 
   getBlogs, createBlog, updateBlog, deleteBlog,
   getMainStories, addToMainStories, removeFromMainStories,
-  getTrendingStories, addToTrendingStories, removeFromTrendingStories 
+  getTrendingStories, addToTrendingStories, removeFromTrendingStories,
+  getNewsCarousel, createNewsCarousel, deleteNewsCarousel
 } from '../services/api';
 
 // Import tab components
@@ -13,6 +14,7 @@ import AddBlogTab from '../components/admin/AddBlogTab';
 import AllBlogsTab from '../components/admin/AllBlogsTab';
 import MainStoriesTab from '../components/admin/MainStoriesTab';
 import TrendingStoriesTab from '../components/admin/TrendingStoriesTab';
+import NewsCarouselTab from '../components/admin/NewsCarouselTab';
 import EditBlogModal from '../components/admin/EditBlogModal';
 
 export default function AdminPanel() {
@@ -49,6 +51,15 @@ export default function AdminPanel() {
   const [trendingStories, setTrendingStories] = useState([]);
   const [trendingStoriesLoading, setTrendingStoriesLoading] = useState(true);
 
+  // News Carousel state
+  const [newsCarousel, setNewsCarousel] = useState([]);
+  const [newsCarouselLoading, setNewsCarouselLoading] = useState(true);
+  const [carouselHeadline, setCarouselHeadline] = useState('');
+  const [carouselImageFile, setCarouselImageFile] = useState(null);
+  const [carouselImagePreview, setCarouselImagePreview] = useState(null);
+  const [carouselSubmitting, setCarouselSubmitting] = useState(false);
+  const [deleteCarouselModal, setDeleteCarouselModal] = useState({ isOpen: false, itemId: null, itemHeadline: '' });
+
   useEffect(() => {
     fetchCategories();
   }, []);
@@ -64,6 +75,9 @@ export default function AdminPanel() {
     if (activeTab === 'trendingStories') {
       fetchBlogs();
       fetchTrendingStories();
+    }
+    if (activeTab === 'newsCarousel') {
+      fetchNewsCarousel();
     }
   }, [activeTab]);
 
@@ -377,6 +391,101 @@ export default function AdminPanel() {
     }
   }
 
+  // News Carousel functions
+  async function fetchNewsCarousel() {
+    try {
+      setNewsCarouselLoading(true);
+      const data = await getNewsCarousel();
+      setNewsCarousel(data.newsCarousel || []);
+    } catch (error) {
+      toast.error(error.message || 'Failed to load news carousel');
+    } finally {
+      setNewsCarouselLoading(false);
+    }
+  }
+
+  function handleCarouselImageChange(e) {
+    const file = e.target.files[0];
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) {
+        toast.error('Image size must be less than 5MB');
+        return;
+      }
+      setCarouselImageFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setCarouselImagePreview(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  }
+
+  function clearCarouselImage() {
+    setCarouselImageFile(null);
+    setCarouselImagePreview(null);
+  }
+
+  function resetCarouselForm() {
+    setCarouselHeadline('');
+    clearCarouselImage();
+  }
+
+  async function handleCarouselSubmit(e) {
+    e.preventDefault();
+
+    if (!carouselHeadline.trim()) {
+      toast.error('Headline is required');
+      return;
+    }
+
+    if (!carouselImageFile) {
+      toast.error('Please select an image');
+      return;
+    }
+
+    if (carouselHeadline.trim().length < 1 || carouselHeadline.trim().length > 200) {
+      toast.error('Headline must be between 1 and 200 characters');
+      return;
+    }
+
+    try {
+      setCarouselSubmitting(true);
+      const formData = new FormData();
+      formData.append('headline', carouselHeadline.trim());
+      formData.append('image', carouselImageFile);
+
+      await createNewsCarousel(formData);
+      toast.success('Successfully Added');
+      resetCarouselForm();
+      fetchNewsCarousel();
+    } catch (error) {
+      toast.error(error.message || 'Failed to add news carousel item');
+    } finally {
+      setCarouselSubmitting(false);
+    }
+  }
+
+  function openDeleteCarouselModal(id, headline) {
+    setDeleteCarouselModal({ isOpen: true, itemId: id, itemHeadline: headline });
+  }
+
+  function closeDeleteCarouselModal() {
+    setDeleteCarouselModal({ isOpen: false, itemId: null, itemHeadline: '' });
+  }
+
+  async function confirmDeleteCarousel() {
+    const { itemId } = deleteCarouselModal;
+    try {
+      await deleteNewsCarousel(itemId);
+      setNewsCarousel(prev => prev.filter(item => item._id !== itemId));
+      toast.success('Successfully Deleted');
+      closeDeleteCarouselModal();
+    } catch (error) {
+      toast.error(error.message || 'Failed to delete news carousel item');
+      closeDeleteCarouselModal();
+    }
+  }
+
   // Utility functions
   function formatDate(dateString) {
     const date = new Date(dateString);
@@ -472,6 +581,14 @@ export default function AdminPanel() {
             >
               Trending Stories
             </button>
+            <button
+              onClick={() => setActiveTab('newsCarousel')}
+              className={`pb-4 px-1 border-b-2 font-medium transition-colors ${
+                activeTab === 'newsCarousel' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'
+              }`}
+            >
+              News Carousel
+            </button>
           </div>
         </div>
 
@@ -537,6 +654,22 @@ export default function AdminPanel() {
             handleRemoveFromTrendingStories={handleRemoveFromTrendingStories}
           />
         )}
+
+        {activeTab === 'newsCarousel' && (
+          <NewsCarouselTab
+            headline={carouselHeadline}
+            setHeadline={setCarouselHeadline}
+            imageFile={carouselImageFile}
+            imagePreview={carouselImagePreview}
+            handleImageChange={handleCarouselImageChange}
+            clearImage={clearCarouselImage}
+            handleSubmit={handleCarouselSubmit}
+            submitting={carouselSubmitting}
+            newsCarousel={newsCarousel}
+            loading={newsCarouselLoading}
+            openDeleteModal={openDeleteCarouselModal}
+          />
+        )}
       </div>
 
       {/* Delete Category Confirmation Modal */}
@@ -595,6 +728,32 @@ export default function AdminPanel() {
               </button>
               <button
                 onClick={confirmDeleteBlog}
+                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete News Carousel Confirmation Modal */}
+      {deleteCarouselModal.isOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4 shadow-xl">
+            <h3 className="text-xl font-semibold text-gray-900 mb-4">Confirm Delete</h3>
+            <p className="text-gray-600 mb-6">
+              Are you sure you want to delete <span className="font-semibold">"{deleteCarouselModal.itemHeadline}"</span>?
+            </p>
+            <div className="flex gap-3 justify-end">
+              <button
+                onClick={closeDeleteCarouselModal}
+                className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmDeleteCarousel}
                 className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
               >
                 Delete
