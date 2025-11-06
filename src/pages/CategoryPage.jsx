@@ -4,6 +4,7 @@ import Navbar from '../components/navbar'
 import BlogTile from '../components/BlogTile'
 import {getBlogsByCategory, getCategories, getBlogs} from '../services/api'
 import {Home, ChevronRight, Search} from 'lucide-react'
+import Footer from '../components/Footer'
 
 const CategoryPage = () => {
 	const {slug} = useParams()
@@ -236,6 +237,7 @@ const CategoryPage = () => {
 					</div>
 				)}
 			</div>
+			<Footer />
 		</div>
 	)
 }

@@ -3,6 +3,7 @@ import {useParams, Link} from 'react-router-dom'
 import Navbar from '../components/navbar'
 import {getBlogById} from '../services/api'
 import {Home, ChevronRight, User, Calendar} from 'lucide-react'
+import Footer from '../components/Footer'
 
 const BlogPage = () => {
 	const {id} = useParams()
@@ -153,6 +154,7 @@ const BlogPage = () => {
 					</div>
 				</div>
 			)}
+			<Footer />
 		</div>
 	)
 }
